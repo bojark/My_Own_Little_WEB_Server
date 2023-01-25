@@ -3,5 +3,7 @@
 
 **Тема:** HTTP и современный Web
 
-**Задача:** Handlers
+**Задачи:**
+* Refactoring & MultiThreading
+* Handlers
 
