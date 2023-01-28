@@ -1,90 +1,78 @@
 package ru.bojark.hwjws_01;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-    private final List<String> VALIDPATHS = List.of("/index.html", "/spring.svg", "/spring.png",
-            "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html",
-            "/events.html", "/events.js");
+
     private final int PORT;
+    private int limit = 4096;
+
+    private Map<String, Map<String, Handler>> handlers = new ConcurrentHashMap<>() {
+    };
+//    private Map<String, Handler> getHandlers = new HashMap<>();
 
     public Server(int port) {
         this.PORT = port;
     }
 
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public void addHandler(String method, String path, Handler handler) {
+
+            if(handlers.containsKey(method)){
+               handlers.get(method).put(path, handler);
+
+            } else {
+                handlers.put(method, new ConcurrentHashMap<>());
+                handlers.get(method).put(path, handler);
+            }
+        System.out.println("Положили хендлер для " + method + " " + path);
+    }
+
     public void connect(Socket socket) {
         System.out.println("Новое подключение! Порт: " + socket.getPort());
-        try (final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        try (final var in = new BufferedInputStream(socket.getInputStream());
              final var out = new BufferedOutputStream(socket.getOutputStream())) {
-            // read only request line for simplicity
-            // must be in form GET /path HTTP/1.1
-            final var requestLine = in.readLine();
-            final var parts = requestLine.split(" ");
 
-            if (parts.length != 3) {
-                // just close socket
-                socket.close();
-                return;
+            Request request = requestParser(in, out);
+
+            String method = request.getMethod();
+            String path = request.getPath();
+
+            System.out.println(handlers);
+
+//            System.out.println(getHandlers);
+//            System.out.println("Ищем хендлер для " + method + " " + path);
+//            if (getHandlers.containsKey(path)) {
+//                getHandlers.get(path).handle(request, out);
+//            } else {
+//                badRequest(out);
+//            }
+
+            if (handlers.containsKey(method)) {
+                if (handlers.get(method).containsKey(path)) {
+                    System.out.println("Нашли хендлер для " + path);
+                    handlers.get(method).get(path).handle(request, out);
+                } else {
+                    badRequest(out);
+                }
+            } else {
+                badRequest(out);
             }
 
-            final var path = parts[1];
-            if (!VALIDPATHS.contains(path)) {
-                out.write((
-                        "HTTP/1.1 404 Not Found\r\n" +
-                                "Content-Length: 0\r\n" +
-                                "Connection: close\r\n" +
-                                "\r\n"
-                ).getBytes());
-                out.flush();
-                socket.close();
-                return;
-            }
-
-            final var filePath = Path.of(".", "public", path);
-            final var mimeType = Files.probeContentType(filePath);
-
-            // special case for classic
-            if (path.equals("/classic.html")) {
-                final var template = Files.readString(filePath);
-                final var content = template.replace(
-                        "{time}",
-                        LocalDateTime.now().toString()
-                ).getBytes();
-                out.write((
-                        "HTTP/1.1 200 OK\r\n" +
-                                "Content-Type: " + mimeType + "\r\n" +
-                                "Content-Length: " + content.length + "\r\n" +
-                                "Connection: close\r\n" +
-                                "\r\n"
-                ).getBytes());
-                out.write(content);
-                out.flush();
-                socket.close();
-                return;
-            }
-
-            final var length = Files.size(filePath);
-            out.write((
-                    "HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: " + mimeType + "\r\n" +
-                            "Content-Length: " + length + "\r\n" +
-                            "Connection: close\r\n" +
-                            "\r\n"
-            ).getBytes());
-            Files.copy(filePath, out);
-            out.flush();
-            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,5 +94,64 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+    private Request requestParser(BufferedInputStream in,
+                                  BufferedOutputStream out) throws IOException {
+        Request.RequestBuilder rb = new Request.RequestBuilder();
+
+        String[] requestLine = requestLineExtracter(in, out);
+        rb.setRequestLine(requestLine);
+        System.out.println(Arrays.toString(requestLine));
+
+        //пока делаю Request только с requestLine, больше в этом задании не требуется:
+        return rb.build();
+
+    }
+
+    private String[] requestLineExtracter(BufferedInputStream in, BufferedOutputStream out) throws IOException {
+        in.mark(limit);
+        final var buffer = new byte[limit];
+        final var read = in.read(buffer);
+
+        //request line
+        final var requestLineDelimiter = new byte[]{'\r', '\n'};
+        final var requestLineEnd = indexOf(buffer, requestLineDelimiter, 0, read);
+        if (requestLineEnd == -1) {
+            badRequest(out);
+            return null;
+        }
+        final var requestLine = new String(Arrays.copyOf(buffer, requestLineEnd)).split(" ");
+        if (requestLine.length != 3) {
+            badRequest(out);
+            return null;
+        }
+
+        return requestLine;
+    }
+
+    private static void badRequest(BufferedOutputStream out) throws IOException {
+        out.write((
+                "HTTP/1.1 400 Bad Request\r\n" +
+                        "Content-Length: 0\r\n" +
+                        "Connection: close\r\n" +
+                        "\r\n"
+        ).getBytes());
+        out.flush();
+    }
+
+    // from google guava with modifications
+    private static int indexOf(byte[] array, byte[] target, int start, int max) {
+        outer:
+        for (int i = start; i < max - target.length + 1; i++) {
+            for (int j = 0; j < target.length; j++) {
+                if (array[i + j] != target[j]) {
+                    continue outer;
+                }
+            }
+            return i;
+        }
+        return -1;
+    }
+
 
 }
