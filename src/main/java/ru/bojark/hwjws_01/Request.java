@@ -23,14 +23,12 @@ public class Request {
                     List<String> headers,
                     String body) {
         this.method = method;
-        if (path.contains(String.valueOf('?'))) {
+        this.query = path;
+        if (path.contains("\\?")) {
             String[] queryLine = path.split(String.valueOf('?'), 2);
             this.path = queryLine[0];
-            this.query = queryLine[1];
-
         } else {
             this.path = path;
-            this.query = "";
         }
         this.protocol = protocol;
         this.headers = headers;
@@ -74,12 +72,11 @@ public class Request {
 
     public List<NameValuePair> getQueryParams() throws URISyntaxException {
         //todo???
-        return URLEncodedUtils.parse(URI.create(query), "&");
+        return URLEncodedUtils.parse(URI.create(query), "utf-8");
     }
 
     public void getQueryParam(String name){
         //todo тут может быть несколько параметров с одним и тем же именем
-
 
     }
 
