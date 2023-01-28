@@ -5,6 +5,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,13 +72,19 @@ public class Request {
     }
 
     public List<NameValuePair> getQueryParams() throws URISyntaxException {
-        //todo???
         return URLEncodedUtils.parse(URI.create(query), "utf-8");
     }
 
-    public void getQueryParam(String name){
+    public List<NameValuePair> getQueryParam(String name) throws URISyntaxException {
         //todo тут может быть несколько параметров с одним и тем же именем
-
+        List<NameValuePair> nameValuePairs = getQueryParams();
+        List<NameValuePair> result = new ArrayList<>();
+        for (NameValuePair pair : nameValuePairs) {
+            if(pair.getName().equals(name)){
+                result.add(pair);
+            }
+        }
+        return result;
     }
 
 
