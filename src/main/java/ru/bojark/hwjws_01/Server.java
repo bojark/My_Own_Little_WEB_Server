@@ -51,30 +51,24 @@ public class Server {
 
             String method = request.getMethod();
             String path = request.getPath();
-
-            System.out.println(handlers);
-
-//            System.out.println(getHandlers);
-//            System.out.println("Ищем хендлер для " + method + " " + path);
-//            if (getHandlers.containsKey(path)) {
-//                getHandlers.get(path).handle(request, out);
-//            } else {
-//                badRequest(out);
-//            }
-
-            if (handlers.containsKey(method)) {
-                if (handlers.get(method).containsKey(path)) {
-                    System.out.println("Нашли хендлер для " + path);
-                    handlers.get(method).get(path).handle(request, out);
-                } else {
-                    badRequest(out);
-                }
-            } else {
-                badRequest(out);
-            }
+            executeHandler(method, path, request, out);
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void executeHandler(String method, String path, Request request, BufferedOutputStream out)
+            throws IOException {
+        if (handlers.containsKey(method)) {
+            if (handlers.get(method).containsKey(path)) {
+                System.out.println("Нашли хендлер для " + path);
+                handlers.get(method).get(path).handle(request, out);
+            } else {
+                badRequest(out);
+            }
+        } else {
+            badRequest(out);
         }
     }
 
