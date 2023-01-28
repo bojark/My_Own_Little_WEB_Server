@@ -13,6 +13,12 @@ public class Main {
 
     public static void main(String[] args) {
         Server server = new Server(9999);
+        addHandlers(server);
+        server.start();
+
+    }
+
+    private static void addHandlers(Server server){
         for (String path : VALIDPATHS) {
             server.addHandler("GET", path, new BasicHandler());
         }
@@ -36,9 +42,8 @@ public class Main {
                     }
 
                 });
-        server.start();
-
     }
+
 }
 
 
