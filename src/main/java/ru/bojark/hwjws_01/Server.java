@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,12 +97,16 @@ public class Server {
         Request.RequestBuilder rb = new Request.RequestBuilder();
 
         String[] requestLine = extractRequestLine(in, out);
+        List<String> headers = extractHeaders(in, out);
+
         rb.setRequestLine(requestLine);
-        System.out.println(Arrays.toString(requestLine));
+        rb.setHeaders(headers);
 
-        //пока делаю Request только с requestLine, больше в этом задании не требуется:
+        if(requestLine[0] != null && requestLine[0].equals("POST")){
+            rb.setBody(extractBody(in, out, headers));
+        }
+
         return rb.build();
-
     }
 
     private String[] extractRequestLine(BufferedInputStream in, BufferedOutputStream out) throws IOException {
@@ -120,6 +125,7 @@ public class Server {
             return null;
         }
         in.reset();
+        System.out.println(Arrays.toString(requestLine));
         return requestLine;
     }
 
@@ -139,8 +145,30 @@ public class Server {
         in.skip(headersStart);
 
         final var headersBytes = in.readNBytes(carriage - headersStart);
-        return Arrays.asList(new String(headersBytes).split("\r\n"));
+        List<String> headers = Arrays.asList(new String(headersBytes).split("\r\n"));
+        System.out.println(headers);
+        return headers;
 
+    }
+    private String extractBody(BufferedInputStream in, BufferedOutputStream out, List<String> headers) throws IOException {
+            in.reset();
+            in.skip(carriage + HEADERS_DELIMETER.length);
+            // вычитываем Content-Length, чтобы прочитать body
+            final var contentLength = extractHeader(headers, "Content-Length");
+            if (contentLength.isPresent()) {
+                final var length = Integer.parseInt(contentLength.get());
+                final var bodyBytes = in.readNBytes(length);
+                return new String(bodyBytes);
+            }
+            return null;
+    }
+
+    private static Optional<String> extractHeader(List<String> headers, String header) {
+        return headers.stream()
+                .filter(o -> o.startsWith(header))
+                .map(o -> o.substring(o.indexOf(" ")))
+                .map(String::trim)
+                .findFirst();
     }
 
     private static void badRequest(BufferedOutputStream out) throws IOException {
