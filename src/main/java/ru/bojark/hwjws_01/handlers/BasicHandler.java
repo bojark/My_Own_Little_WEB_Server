@@ -12,7 +12,7 @@ public class BasicHandler implements Handler {
     @Override
     public void handle(Request request, BufferedOutputStream responseStream) {
         final var filePath = Path.of(".", "public", request.getPath());
-        System.out.println("хендлер пытается найти что-то по пути " + filePath);
+        System.out.println("Хендлер пытается найти что-то по пути " + filePath);
         try{
             final var mimeType = Files.probeContentType(filePath);
             final var length = Files.size(filePath);

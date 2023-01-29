@@ -6,10 +6,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +16,9 @@ public class Server {
 
     private final int PORT;
     private int limit = 4096;
+    private final byte[] REQUEST_LINE_DELIMETER = new byte[]{'\r', '\n'};
+    private final byte[] HEADERS_DELIMETER = new byte[]{'\r', '\n', '\r', '\n'};
+    private int carriage;
 
     private Map<String, Map<String, Handler>> handlers = new ConcurrentHashMap<>() {
     };
@@ -93,7 +95,7 @@ public class Server {
                                   BufferedOutputStream out) throws IOException {
         Request.RequestBuilder rb = new Request.RequestBuilder();
 
-        String[] requestLine = requestLineExtracter(in, out);
+        String[] requestLine = extractRequestLine(in, out);
         rb.setRequestLine(requestLine);
         System.out.println(Arrays.toString(requestLine));
 
@@ -102,25 +104,43 @@ public class Server {
 
     }
 
-    private String[] requestLineExtracter(BufferedInputStream in, BufferedOutputStream out) throws IOException {
+    private String[] extractRequestLine(BufferedInputStream in, BufferedOutputStream out) throws IOException {
         in.mark(limit);
         final var buffer = new byte[limit];
         final var read = in.read(buffer);
-
         //request line
-        final var requestLineDelimiter = new byte[]{'\r', '\n'};
-        final var requestLineEnd = indexOf(buffer, requestLineDelimiter, 0, read);
-        if (requestLineEnd == -1) {
+        carriage = indexOf(buffer, REQUEST_LINE_DELIMETER, 0, read);
+        if (carriage == -1) {
             badRequest(out);
             return null;
         }
-        final var requestLine = new String(Arrays.copyOf(buffer, requestLineEnd)).split(" ");
+        final var requestLine = new String(Arrays.copyOf(buffer, carriage)).split(" ");
         if (requestLine.length != 3) {
             badRequest(out);
             return null;
         }
-
+        in.reset();
         return requestLine;
+    }
+
+    private List<String> extractHeaders(BufferedInputStream in, BufferedOutputStream out) throws IOException {
+        in.mark(limit);
+        final var buffer = new byte[limit];
+        final var read = in.read(buffer);
+
+        final var headersStart = carriage + REQUEST_LINE_DELIMETER.length;
+        carriage = indexOf(buffer, HEADERS_DELIMETER, headersStart, read);
+        if (carriage == -1) {
+            badRequest(out);
+        }
+
+        in.reset();
+        // пропускаем requestLine
+        in.skip(headersStart);
+
+        final var headersBytes = in.readNBytes(carriage - headersStart);
+        return Arrays.asList(new String(headersBytes).split("\r\n"));
+
     }
 
     private static void badRequest(BufferedOutputStream out) throws IOException {
