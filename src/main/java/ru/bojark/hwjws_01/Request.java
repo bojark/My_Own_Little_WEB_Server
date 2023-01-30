@@ -1,5 +1,11 @@
 package ru.bojark.hwjws_01;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +13,7 @@ public class Request {
 
     private final String method;
     private final String path;
+    private final String query;
     private final String protocol;
     private final List<String> headers;
     private final String body;
@@ -17,12 +24,17 @@ public class Request {
                     List<String> headers,
                     String body) {
         this.method = method;
-        this.path = path;
+        this.query = path;
+        if (path.contains("\\?")) {
+            String[] queryLine = path.split(String.valueOf('?'), 2);
+            this.path = queryLine[0];
+        } else {
+            this.path = path;
+        }
         this.protocol = protocol;
         this.headers = headers;
         this.body = body;
     }
-
 
     public String getMethod() {
         return method;
@@ -59,6 +71,24 @@ public class Request {
         return sb.toString();
     }
 
+    public List<NameValuePair> getQueryParams() throws URISyntaxException {
+        return URLEncodedUtils.parse(URI.create(query), "utf-8");
+    }
+
+    public List<NameValuePair> getQueryParam(String name) throws URISyntaxException {
+        //todo тут может быть несколько параметров с одним и тем же именем
+        List<NameValuePair> nameValuePairs = getQueryParams();
+        List<NameValuePair> result = new ArrayList<>();
+        for (NameValuePair pair : nameValuePairs) {
+            if(pair.getName().equals(name)){
+                result.add(pair);
+            }
+        }
+        return result;
+    }
+
+
+    //класс-фабрика
     public static class RequestBuilder {
         private String[] requestLine = null;
         private List<String> headers = List.of("Empty header");
@@ -77,6 +107,7 @@ public class Request {
         }
 
         public Request build() {
+
             return new Request(requestLine[0], requestLine[1], requestLine[2], headers, body);
         }
 

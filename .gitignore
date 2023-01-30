@@ -45,3 +45,6 @@ captures/
 
 ### Gradle ###
 !gradle/wrapper/gradle-wrapper.jar
+
+###somthingIDontWantToShowForAnyReasonThatsNotYourBisWhySorry###
+src/main/java/ru/bojark/hwjws_01/someTestStuff/
