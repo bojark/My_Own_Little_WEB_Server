@@ -2,14 +2,19 @@ package ru.bojark.hwjws_01;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import ru.bojark.hwjws_01.misc.Colors;
+import ru.bojark.hwjws_01.misc.KeyValuePair;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class Request {
+
+    private static final String EMPTY_HEADER = "Empty header";
+    private static final String EMPTY_BODY = "Empty body";
+    private static final String CHARSET_NAME = "utf-8";
 
     private final String method;
     private final String path;
@@ -34,7 +39,7 @@ public class Request {
         this.protocol = protocol;
         this.headers = headers;
         this.body = body;
-        System.out.println("Новый Request:\n" + this + "\nEND");
+        System.out.println(Colors.GREEN + "Новый Request:\n" + Colors.WHITE + this + "\nEND" + Colors.RESET);
     }
 
     public String getMethod() {
@@ -53,14 +58,6 @@ public class Request {
         return body;
     }
 
-    private Optional<String> extractHeader(String header) {
-        return this.headers.stream()
-                .filter(o -> o.startsWith(header))
-                .map(o -> o.substring(o.indexOf(" ")))
-                .map(String::trim)
-                .findFirst();
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -73,7 +70,7 @@ public class Request {
     }
 
     public List<NameValuePair> getQueryParams() throws URISyntaxException {
-        return URLEncodedUtils.parse(URI.create(query), "utf-8");
+        return URLEncodedUtils.parse(URI.create(query), CHARSET_NAME);
     }
 
     public List<NameValuePair> getQueryParam(String name) throws URISyntaxException {
@@ -88,31 +85,54 @@ public class Request {
         return result;
     }
 
-    public void getPostParams(){
+    public List<NameValuePair> getPostParams(){
+        if (!body.equals(EMPTY_BODY)){
+            List<String> params = List.of(body.split("&"));
+            System.out.println(params);
+            List<NameValuePair> keyValues = new ArrayList<>();
+            for (String param : params) {
+                String[] kv = param.split("=");
+                keyValues.add(new KeyValuePair(kv[0], kv[1]));
+            }
+            return keyValues;
+        } else {
+            System.out.println("!! Body of this Request is empty !!");
+            return null;
+        }
 
     }
 
-    public void getPostParam(){
-
+    public List<NameValuePair> getPostParam(String name){
+        List<NameValuePair> nvps = getPostParams();
+        List<NameValuePair> result = new ArrayList<>();
+        for (NameValuePair nvp : nvps) {
+            if(nvp.getName().equals(name)){
+                result.add(nvp);
+            }
+        }
+        return result;
     }
-
 
     //класс-фабрика
     public static class RequestBuilder {
+
         private String[] requestLine = null;
-        private List<String> headers = List.of("Empty header");
-        private String body = "Empty body";
+        private List<String> headers = List.of(EMPTY_HEADER);
+        private String body = EMPTY_BODY;
 
-        public void setRequestLine(String[] requestLine) {
+        public RequestBuilder setRequestLine(String[] requestLine) {
             this.requestLine = requestLine;
+            return this;
         }
 
-        public void setHeaders(List<String> headers) {
+        public RequestBuilder setHeaders(List<String> headers) {
             this.headers = headers;
+            return this;
         }
 
-        public void setBody(String body) {
+        public RequestBuilder setBody(String body) {
             this.body = body;
+            return this;
         }
 
         public Request build() {

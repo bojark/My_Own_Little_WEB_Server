@@ -1,6 +1,6 @@
 package ru.bojark.hwjws_01.misc;
 
-enum Color {
+public enum Colors {
     //Color end string, color reset
     RESET("\033[0;31m"),
 
@@ -76,7 +76,7 @@ enum Color {
 
     private final String code;
 
-    Color(String code) {
+    Colors(String code) {
         this.code = code;
     }
 

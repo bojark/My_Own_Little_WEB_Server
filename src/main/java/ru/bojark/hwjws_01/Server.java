@@ -1,5 +1,8 @@
 package ru.bojark.hwjws_01;
 
+import ru.bojark.hwjws_01.misc.BadRequestUtil;
+import ru.bojark.hwjws_01.misc.Colors;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -68,15 +71,15 @@ public class Server {
                 System.out.println("Нашли хендлер для " + path);
                 handlers.get(method).get(path).handle(request, out);
             } else {
-                badRequest(out);
+                BadRequestUtil.badRequest(out);
             }
         } else {
-            badRequest(out);
+            BadRequestUtil.badRequest(out);
         }
     }
 
     public void start() {
-        System.out.println("Сервер запускается. Порт: " + PORT);
+        System.out.println(Colors.RESET + "Сервер запускается. Порт: " + PORT);
         final ExecutorService threadPool = Executors.newFixedThreadPool(64);
         try (final var serverSocket = new ServerSocket(PORT)) {
             while (true) {
@@ -99,8 +102,8 @@ public class Server {
         String[] requestLine = extractRequestLine(in, out);
         List<String> headers = extractHeaders(in, out);
 
-        rb.setRequestLine(requestLine);
-        rb.setHeaders(headers);
+        rb.setRequestLine(requestLine)
+                .setHeaders(headers);
 
         if(requestLine[0] != null && requestLine[0].equals("POST")){
             rb.setBody(extractBody(in, out, headers));
@@ -116,12 +119,12 @@ public class Server {
         //request line
         carriage = indexOf(buffer, REQUEST_LINE_DELIMETER, 0, read);
         if (carriage == -1) {
-            badRequest(out);
+            BadRequestUtil.badRequest(out);
             return null;
         }
         final var requestLine = new String(Arrays.copyOf(buffer, carriage)).split(" ");
         if (requestLine.length != 3) {
-            badRequest(out);
+            BadRequestUtil.badRequest(out);
             return null;
         }
         in.reset();
@@ -137,7 +140,7 @@ public class Server {
         final var headersStart = carriage + REQUEST_LINE_DELIMETER.length;
         carriage = indexOf(buffer, HEADERS_DELIMETER, headersStart, read);
         if (carriage == -1) {
-            badRequest(out);
+            BadRequestUtil.badRequest(out);
         }
 
         in.reset();
@@ -171,16 +174,6 @@ public class Server {
                 .map(o -> o.substring(o.indexOf(" ")))
                 .map(String::trim)
                 .findFirst();
-    }
-
-    private static void badRequest(BufferedOutputStream out) throws IOException {
-        out.write((
-                "HTTP/1.1 400 Bad Request\r\n" +
-                        "Content-Length: 0\r\n" +
-                        "Connection: close\r\n" +
-                        "\r\n"
-        ).getBytes());
-        out.flush();
     }
 
     // from google guava with modifications

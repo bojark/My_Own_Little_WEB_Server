@@ -2,6 +2,8 @@ package ru.bojark.hwjws_01.handlers;
 
 import ru.bojark.hwjws_01.Handler;
 import ru.bojark.hwjws_01.Request;
+import ru.bojark.hwjws_01.Server;
+import ru.bojark.hwjws_01.misc.BadRequestUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -20,16 +22,16 @@ public class UEFormHandler implements Handler {
             //todo здесь сделать экстракцию параметров:
             final var content = template.replace(
                     "{title}",
-                    "ЗАГЛУШКА"
+                    request.getPostParams().get(0).getValue()
             ).replace(
                     "{value1}",
-                    "ЗАГЛУШКА"
+                    request.getPostParams().get(1).getValue()
             ).replace(
                     "{value2}",
-                    "ЗАГЛУШКА"
+                    request.getPostParams().get(2).getValue()
             ).replace(
                     "{image}",
-                    "ЗАГЛУШКА"
+                    request.getPostParams().get(3).getValue()
             ).getBytes();
 
 
@@ -44,7 +46,11 @@ public class UEFormHandler implements Handler {
             responseStream.flush();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                BadRequestUtil.badRequest(responseStream);
+            } catch (IOException ex) {
+                e.printStackTrace();
+            }
         }
     }
 }
