@@ -113,6 +113,15 @@ public class Request {
         return result;
     }
 
+    public void getParts(){
+        //todo
+    }
+    public void getPart(String name){
+        //todo
+    }
+
+
+
     //класс-фабрика
     public static class RequestBuilder {
 
