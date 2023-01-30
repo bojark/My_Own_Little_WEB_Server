@@ -125,7 +125,7 @@ public class Server {
             return null;
         }
         in.reset();
-        System.out.println(Arrays.toString(requestLine));
+        System.out.println("RequestLine:\n" + Arrays.toString(requestLine));
         return requestLine;
     }
 
@@ -146,7 +146,7 @@ public class Server {
 
         final var headersBytes = in.readNBytes(carriage - headersStart);
         List<String> headers = Arrays.asList(new String(headersBytes).split("\r\n"));
-        System.out.println(headers);
+        System.out.println("Headers:\n" + headers);
         return headers;
 
     }
@@ -158,7 +158,9 @@ public class Server {
             if (contentLength.isPresent()) {
                 final var length = Integer.parseInt(contentLength.get());
                 final var bodyBytes = in.readNBytes(length);
-                return new String(bodyBytes);
+                String body = new String(bodyBytes);
+                System.out.println("Body:\n" + body);
+                return body;
             }
             return null;
     }

@@ -1,9 +1,6 @@
 package ru.bojark.hwjws_01;
 
-import ru.bojark.hwjws_01.handlers.BasicHandler;
-import ru.bojark.hwjws_01.handlers.ClassicHandler;
-import ru.bojark.hwjws_01.handlers.FormHandler;
-import ru.bojark.hwjws_01.handlers.TeapotHandler;
+import ru.bojark.hwjws_01.handlers.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,8 +18,10 @@ public class Main {
     }
 
     private static void addHandlers(Server server){
-        server.addHandler("GET", "/post_form.html", new BasicHandler());
-        server.addHandler("GET", "/?value=get-value", new FormHandler());
+        server.addHandler("GET", "/post_form_multi.html", new BasicHandler());
+        server.addHandler("GET", "/post_form_url.html", new BasicHandler());
+        server.addHandler("POST", "/?value=get-value", new FormHandler());
+        server.addHandler("POST", "/1?value=get-value", new UEFormHandler());
         for (String path : VALIDPATHS) {
             server.addHandler("GET", path, new BasicHandler());
         }
