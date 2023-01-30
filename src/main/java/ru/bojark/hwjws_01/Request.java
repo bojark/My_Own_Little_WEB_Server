@@ -34,6 +34,7 @@ public class Request {
         this.protocol = protocol;
         this.headers = headers;
         this.body = body;
+        System.out.println("Новый Request:\n" + this + "\nEND");
     }
 
     public String getMethod() {
@@ -85,6 +86,14 @@ public class Request {
             }
         }
         return result;
+    }
+
+    public void getPostParams(){
+
+    }
+
+    public void getPostParam(){
+
     }
 
 
