@@ -1,4 +1,4 @@
-# Домашне работы в блоке «Web, Spring & Spring MVC» 1.1, 1.2, 2.1, 2.2
+# Домашне работы в блоке «Web, Spring & Spring MVC» 1.1, 1.2, 2.1, 2.2, 2.3
 ## Костин Иван
 
 **Тема:** HTTP и современный Web
@@ -8,4 +8,5 @@
 * Handlers*
 * Query
 * x-www-form-urlencoded
+* multipart/form-data
 
