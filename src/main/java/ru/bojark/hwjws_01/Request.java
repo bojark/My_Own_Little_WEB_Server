@@ -1,5 +1,6 @@
 package ru.bojark.hwjws_01;
 
+import org.apache.commons.fileupload.FileUpload;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import ru.bojark.hwjws_01.misc.Colors;
@@ -119,8 +120,6 @@ public class Request {
     public void getPart(String name){
         //todo
     }
-
-
 
     //класс-фабрика
     public static class RequestBuilder {
