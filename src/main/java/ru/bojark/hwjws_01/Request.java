@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Request {
 
@@ -83,13 +84,13 @@ public class Request {
         return queryParams;
     }
 
-    private String getParam(String name, List<NameValuePair> source) {
-        return source.stream().filter(p -> p.getName().equals(name))
-                .map(NameValuePair::getValue)
-                .findFirst().get();
+    private List<NameValuePair> getParam(String name, List<NameValuePair> source) {
+        return source.stream()
+                .filter(p -> p.getName().equals(name))
+                .collect(Collectors.toList());
     }
 
-    public String getQueryParam(String name) {
+    public List<NameValuePair> getQueryParam(String name) {
         //todo тут может быть несколько параметров с одним и тем же именем, но по факту мы находим один:
         return getParam(name, queryParams);
     }
@@ -111,7 +112,7 @@ public class Request {
         return postParams;
     }
 
-    public String getPostParam(String name) {
+    public List<NameValuePair> getPostParam(String name) {
         return getParam(name, postParams);
     }
 
