@@ -19,7 +19,7 @@ public class ResponceUtil {
         sendResponse(out, BAD_REQUEST);
     }
 
-    public static void notFound (BufferedOutputStream out) throws IOException {
+    public static void notFound(BufferedOutputStream out) throws IOException {
         sendResponse(out, NOT_FOUND);
     }
 

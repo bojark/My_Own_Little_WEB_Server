@@ -1,7 +1,7 @@
 package ru.bojark.hwjws_01;
 
-import ru.bojark.hwjws_01.misc.ResponceUtil;
 import ru.bojark.hwjws_01.misc.Colors;
+import ru.bojark.hwjws_01.misc.ResponceUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -37,13 +37,13 @@ public class Server {
 
     public void addHandler(String method, String path, Handler handler) {
 
-            if(handlers.containsKey(method)){
-               handlers.get(method).put(path, handler);
+        if (handlers.containsKey(method)) {
+            handlers.get(method).put(path, handler);
 
-            } else {
-                handlers.put(method, new ConcurrentHashMap<>());
-                handlers.get(method).put(path, handler);
-            }
+        } else {
+            handlers.put(method, new ConcurrentHashMap<>());
+            handlers.get(method).put(path, handler);
+        }
         System.out.println(Colors.RESET + "New handler for " + Colors.BLUE_BOLD + method + Colors.YELLOW_BOLD + " " + path);
     }
 
@@ -107,7 +107,7 @@ public class Server {
         rb.setRequestLine(requestLine)
                 .setHeaders(headers);
 
-        if(requestLine[0] != null && requestLine[0].equals("POST")){
+        if (requestLine[0] != null && requestLine[0].equals("POST")) {
             rb.setBody(extractBody(in, out, headers));
         }
 
@@ -155,18 +155,19 @@ public class Server {
         return headers;
 
     }
+
     private String extractBody(BufferedInputStream in, BufferedOutputStream out, List<String> headers) throws IOException {
-            in.reset();
-            in.skip(carriage + HEADERS_DELIMITER.length);
-            final var contentLength = extractHeader(headers, "Content-Length");
-            if (contentLength.isPresent()) {
-                final var length = Integer.parseInt(contentLength.get());
-                final var bodyBytes = in.readNBytes(length);
-                String body = new String(bodyBytes);
+        in.reset();
+        in.skip(carriage + HEADERS_DELIMITER.length);
+        final var contentLength = extractHeader(headers, "Content-Length");
+        if (contentLength.isPresent()) {
+            final var length = Integer.parseInt(contentLength.get());
+            final var bodyBytes = in.readNBytes(length);
+            String body = new String(bodyBytes);
 //                System.out.println("Body:\n" + body);
-                return body;
-            }
-            return null;
+            return body;
+        }
+        return null;
     }
 
     private static Optional<String> extractHeader(List<String> headers, String header) {

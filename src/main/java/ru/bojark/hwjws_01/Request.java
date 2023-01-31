@@ -55,13 +55,13 @@ public class Request {
         }
         queryParams = queryParams1;
 
-        if(doesContain(headers, CONTENT_TYPE_HEADER)){
+        if (doesContain(headers, CONTENT_TYPE_HEADER)) {
             var contentType = headers.stream()
                     .filter(p -> Objects.equals(p.getName(), CONTENT_TYPE_HEADER))
                     .findFirst();
             System.out.println(contentType);
-            if(contentType.isPresent()){
-                if(Objects.equals(contentType.get().getValue(), URLENCODED)){
+            if (contentType.isPresent()) {
+                if (Objects.equals(contentType.get().getValue(), URLENCODED)) {
                     postParams = extractPostParams();
                 } else {
                     postParams = new ArrayList<>();
@@ -92,9 +92,9 @@ public class Request {
         return body;
     }
 
-    private Boolean doesContain(List<NameValuePair> list, String name){
+    private Boolean doesContain(List<NameValuePair> list, String name) {
         for (NameValuePair pair : list) {
-            if(pair.getName().equals(name)){
+            if (pair.getName().equals(name)) {
                 return true;
             }
         }
@@ -143,7 +143,7 @@ public class Request {
         return getParam(name, postParams);
     }
 
-    private NameValuePair findHeader(String name){
+    private NameValuePair findHeader(String name) {
         return getParam(name, headers).get(0);
     }
 
@@ -180,7 +180,7 @@ public class Request {
             return this;
         }
 
-        private List<NameValuePair> parseHeaders(){
+        private List<NameValuePair> parseHeaders() {
             List<NameValuePair> result = new ArrayList<>();
             for (String header : headersList) {
                 String[] headerPair = header.split(": ");

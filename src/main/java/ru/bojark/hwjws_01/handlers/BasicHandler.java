@@ -14,7 +14,7 @@ public class BasicHandler implements Handler {
     public void handle(Request request, BufferedOutputStream responseStream) {
         final var filePath = Path.of(".", "public", request.getPath());
         System.out.println("Handler tries to find something on " + Colors.YELLOW_BOLD + filePath + Colors.RESET);
-        try{
+        try {
             final var mimeType = Files.probeContentType(filePath);
             final var length = Files.size(filePath);
             responseStream.write((
@@ -26,10 +26,9 @@ public class BasicHandler implements Handler {
             ).getBytes());
             Files.copy(filePath, responseStream);
             responseStream.flush();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
 
 
     }

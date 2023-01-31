@@ -16,7 +16,7 @@ public class Main {
 
     }
 
-    private static void addHandlers(Server server){
+    private static void addHandlers(Server server) {
         server.addHandler("GET", "/post_form_multi.html", new BasicHandler());
         server.addHandler("GET", "/post_form_url.html", new BasicHandler());
         server.addHandler("POST", "/?value=get-value", new FormHandler());
