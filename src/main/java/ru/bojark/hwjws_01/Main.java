@@ -2,7 +2,6 @@ package ru.bojark.hwjws_01;
 
 import ru.bojark.hwjws_01.handlers.*;
 
-import java.io.IOException;
 import java.util.List;
 
 public class Main {

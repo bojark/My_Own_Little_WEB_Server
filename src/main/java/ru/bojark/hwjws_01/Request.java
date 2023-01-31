@@ -22,12 +22,15 @@ public class Request {
     private final String protocol;
     private final List<String> headers;
     private final String body;
+    private final List<NameValuePair> queryParams;
+    private final List<NameValuePair> postParams;
 
     private Request(String method,
                     String path,
                     String protocol,
                     List<String> headers,
                     String body) {
+
         this.method = method;
         this.query = path;
         if (path.contains("\\?")) {
@@ -39,6 +42,19 @@ public class Request {
         this.protocol = protocol;
         this.headers = headers;
         this.body = body;
+        List<NameValuePair> queryParams1;
+        try {
+            queryParams1 = extractQueryParams();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            queryParams1 = new ArrayList<>();
+        }
+        queryParams = queryParams1;
+        if (!this.body.equals(EMPTY_BODY)) {
+            postParams = extractPostParams();
+        } else {
+            postParams = new ArrayList<>();
+        }
         System.out.println(Colors.GREEN + "Новый Request:\n" + Colors.WHITE + this + "\nEND" + Colors.RESET);
     }
 
@@ -58,6 +74,47 @@ public class Request {
         return body;
     }
 
+
+    private List<NameValuePair> extractQueryParams() throws URISyntaxException {
+        return URLEncodedUtils.parse(URI.create(query), CHARSET_NAME);
+    }
+
+    public List<NameValuePair> getQueryParams() {
+        return queryParams;
+    }
+
+    private String getParam(String name, List<NameValuePair> source) {
+        return source.stream().filter(p -> p.getName().equals(name))
+                .map(NameValuePair::getValue)
+                .findFirst().get();
+    }
+
+    public String getQueryParam(String name) {
+        //todo тут может быть несколько параметров с одним и тем же именем, но по факту мы находим один:
+        return getParam(name, queryParams);
+    }
+
+
+    private List<NameValuePair> extractPostParams() {
+        List<String> params = List.of(body.split("&"));
+        System.out.println(params);
+        List<NameValuePair> keyValues = new ArrayList<>();
+        for (String param : params) {
+            String[] kv = param.split("=");
+            keyValues.add(new KeyValuePair(kv[0], kv[1]));
+        }
+        return keyValues;
+
+    }
+
+    public List<NameValuePair> getPostParams() {
+        return postParams;
+    }
+
+    public String getPostParam(String name) {
+        return getParam(name, postParams);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -67,50 +124,6 @@ public class Request {
         }
         sb.append("\r\n").append(body);
         return sb.toString();
-    }
-
-    public List<NameValuePair> getQueryParams() throws URISyntaxException {
-        return URLEncodedUtils.parse(URI.create(query), CHARSET_NAME);
-    }
-
-    public List<NameValuePair> getQueryParam(String name) throws URISyntaxException {
-        //todo тут может быть несколько параметров с одним и тем же именем
-        List<NameValuePair> nameValuePairs = getQueryParams();
-        List<NameValuePair> result = new ArrayList<>();
-        for (NameValuePair pair : nameValuePairs) {
-            if(pair.getName().equals(name)){
-                result.add(pair);
-            }
-        }
-        return result;
-    }
-
-    public List<NameValuePair> getPostParams(){
-        if (!body.equals(EMPTY_BODY)){
-            List<String> params = List.of(body.split("&"));
-            System.out.println(params);
-            List<NameValuePair> keyValues = new ArrayList<>();
-            for (String param : params) {
-                String[] kv = param.split("=");
-                keyValues.add(new KeyValuePair(kv[0], kv[1]));
-            }
-            return keyValues;
-        } else {
-            System.out.println("!! Body of this Request is empty !!");
-            return null;
-        }
-
-    }
-
-    public List<NameValuePair> getPostParam(String name){
-        List<NameValuePair> nvps = getPostParams();
-        List<NameValuePair> result = new ArrayList<>();
-        for (NameValuePair nvp : nvps) {
-            if(nvp.getName().equals(name)){
-                result.add(nvp);
-            }
-        }
-        return result;
     }
 
     //класс-фабрика

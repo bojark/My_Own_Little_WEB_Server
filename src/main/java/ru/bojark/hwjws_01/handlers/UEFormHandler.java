@@ -2,14 +2,12 @@ package ru.bojark.hwjws_01.handlers;
 
 import ru.bojark.hwjws_01.Handler;
 import ru.bojark.hwjws_01.Request;
-import ru.bojark.hwjws_01.Server;
-import ru.bojark.hwjws_01.misc.BadRequestUtil;
+import ru.bojark.hwjws_01.misc.ResponceUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 
 public class UEFormHandler implements Handler {
     @Override
@@ -47,7 +45,7 @@ public class UEFormHandler implements Handler {
 
         } catch (IOException e) {
             try {
-                BadRequestUtil.badRequest(responseStream);
+                ResponceUtil.badRequest(responseStream);
             } catch (IOException ex) {
                 e.printStackTrace();
             }
