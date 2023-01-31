@@ -55,7 +55,7 @@ public class Request {
         } else {
             postParams = new ArrayList<>();
         }
-        System.out.println(Colors.GREEN + "Новый Request:\n" + Colors.WHITE + this + "\nEND" + Colors.RESET);
+        System.out.println(Colors.GREEN + ">> New Request <<\n" + Colors.WHITE + this + Colors.GREEN + "\n>> END <<" + Colors.RESET);
     }
 
     public String getMethod() {
@@ -97,7 +97,7 @@ public class Request {
 
     private List<NameValuePair> extractPostParams() {
         List<String> params = List.of(body.split("&"));
-        System.out.println(params);
+        System.out.println("POST params extracted: " + Colors.WHITE + params + Colors.RESET);
         List<NameValuePair> keyValues = new ArrayList<>();
         for (String param : params) {
             String[] kv = param.split("=");

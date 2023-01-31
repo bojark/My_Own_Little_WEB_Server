@@ -44,11 +44,11 @@ public class Server {
                 handlers.put(method, new ConcurrentHashMap<>());
                 handlers.get(method).put(path, handler);
             }
-        System.out.println("Положили хендлер для " + method + " " + path);
+        System.out.println(Colors.RESET + "New handler for " + Colors.BLUE_BOLD + method + Colors.YELLOW_BOLD + " " + path);
     }
 
     public void connect(Socket socket) {
-        System.out.println("Новое подключение! Порт: " + socket.getPort());
+        System.out.println("New connection! Port: " + Colors.YELLOW_BOLD + socket.getPort() + Colors.RESET);
         try (final var in = new BufferedInputStream(socket.getInputStream());
              final var out = new BufferedOutputStream(socket.getOutputStream())) {
 
@@ -68,7 +68,7 @@ public class Server {
         if (handlers.containsKey(method)) {
             if (handlers.get(method)
                     .containsKey(path)) {
-                System.out.println("Нашли хендлер для " + path);
+                System.out.println(Colors.RESET + "Handler found for " + Colors.YELLOW_BOLD + path + Colors.RESET);
                 handlers.get(method)
                         .get(path)
                         .handle(request, out);
@@ -81,7 +81,7 @@ public class Server {
     }
 
     public void start() {
-        System.out.println(Colors.RESET + "Сервер запускается. Порт: " + PORT);
+        System.out.println(Colors.CYAN + ">> Server started. Port: " + Colors.YELLOW_BOLD + PORT + Colors.CYAN + " <<" + Colors.RESET);
         final ExecutorService threadPool = Executors.newFixedThreadPool(64);
         try (final var serverSocket = new ServerSocket(PORT)) {
             while (true) {
