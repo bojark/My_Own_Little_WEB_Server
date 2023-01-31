@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Request {
@@ -16,12 +17,14 @@ public class Request {
     private static final String EMPTY_HEADER = "Empty header";
     private static final String EMPTY_BODY = "Empty body";
     private static final String CHARSET_NAME = "utf-8";
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String URLENCODED = "application/x-www-form-urlencoded";
 
     private final String method;
     private final String path;
     private final String query;
     private final String protocol;
-    private final List<String> headers;
+    private final List<NameValuePair> headers;
     private final String body;
     private final List<NameValuePair> queryParams;
     private final List<NameValuePair> postParams;
@@ -29,7 +32,7 @@ public class Request {
     private Request(String method,
                     String path,
                     String protocol,
-                    List<String> headers,
+                    List<NameValuePair> headers,
                     String body) {
 
         this.method = method;
@@ -51,11 +54,25 @@ public class Request {
             queryParams1 = new ArrayList<>();
         }
         queryParams = queryParams1;
-        if (!this.body.equals(EMPTY_BODY)) {
-            postParams = extractPostParams();
+
+        if(doesContain(headers, CONTENT_TYPE_HEADER)){
+            var contentType = headers.stream()
+                    .filter(p -> Objects.equals(p.getName(), CONTENT_TYPE_HEADER))
+                    .findFirst();
+            System.out.println(contentType);
+            if(contentType.isPresent()){
+                if(Objects.equals(contentType.get().getValue(), URLENCODED)){
+                    postParams = extractPostParams();
+                } else {
+                    postParams = new ArrayList<>();
+                }
+            } else {
+                postParams = new ArrayList<>();
+            }
         } else {
             postParams = new ArrayList<>();
         }
+
         System.out.println(Colors.GREEN + ">> New Request <<\n" + Colors.WHITE + this + Colors.GREEN + "\n>> END <<" + Colors.RESET);
     }
 
@@ -67,12 +84,27 @@ public class Request {
         return path;
     }
 
-    public List<String> getHeaders() {
+    public List<NameValuePair> getHeaders() {
         return headers;
     }
 
     public String getBody() {
         return body;
+    }
+
+    private Boolean doesContain(List<NameValuePair> list, String name){
+        for (NameValuePair pair : list) {
+            if(pair.getName().equals(name)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<NameValuePair> getParam(String name, List<NameValuePair> source) {
+        return source.stream()
+                .filter(p -> p.getName().equals(name))
+                .collect(Collectors.toList());
     }
 
 
@@ -84,11 +116,6 @@ public class Request {
         return queryParams;
     }
 
-    private List<NameValuePair> getParam(String name, List<NameValuePair> source) {
-        return source.stream()
-                .filter(p -> p.getName().equals(name))
-                .collect(Collectors.toList());
-    }
 
     public List<NameValuePair> getQueryParam(String name) {
         //todo тут может быть несколько параметров с одним и тем же именем, но по факту мы находим один:
@@ -116,14 +143,18 @@ public class Request {
         return getParam(name, postParams);
     }
 
+    private NameValuePair findHeader(String name){
+        return getParam(name, headers).get(0);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(method).append(" ").append(path).append(" ").append(protocol).append("\r\n");
-        for (String header : headers) {
-            sb.append(header);
+        for (NameValuePair header : headers) {
+            sb.append(header.getName()).append(": ").append(header.getValue()).append("\r\n");
         }
-        sb.append("\r\n").append(body);
+        sb.append(body);
         return sb.toString();
     }
 
@@ -131,7 +162,7 @@ public class Request {
     public static class RequestBuilder {
 
         private String[] requestLine = null;
-        private List<String> headers = List.of(EMPTY_HEADER);
+        private List<String> headersList = List.of(EMPTY_HEADER);
         private String body = EMPTY_BODY;
 
         public RequestBuilder setRequestLine(String[] requestLine) {
@@ -140,7 +171,7 @@ public class Request {
         }
 
         public RequestBuilder setHeaders(List<String> headers) {
-            this.headers = headers;
+            this.headersList = headers;
             return this;
         }
 
@@ -149,9 +180,18 @@ public class Request {
             return this;
         }
 
+        private List<NameValuePair> parseHeaders(){
+            List<NameValuePair> result = new ArrayList<>();
+            for (String header : headersList) {
+                String[] headerPair = header.split(": ");
+                result.add(new KeyValuePair(headerPair[0], headerPair[1]));
+            }
+            return result;
+        }
+
         public Request build() {
 
-            return new Request(requestLine[0], requestLine[1], requestLine[2], headers, body);
+            return new Request(requestLine[0], requestLine[1], requestLine[2], parseHeaders(), body);
         }
 
     }
