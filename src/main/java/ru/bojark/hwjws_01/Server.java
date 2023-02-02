@@ -47,39 +47,6 @@ public class Server {
         System.out.println(Colors.RESET + "New handler for " + Colors.BLUE_BOLD + method + Colors.YELLOW_BOLD + " " + path);
     }
 
-    public void connect(Socket socket) {
-        System.out.println("New connection! Port: " + Colors.YELLOW_BOLD + socket.getPort() + Colors.RESET);
-        try (final var in = new BufferedInputStream(socket.getInputStream());
-             final var out = new BufferedOutputStream(socket.getOutputStream())) {
-
-            Request request = requestParser(in, out);
-
-            String method = request.getMethod();
-            String path = request.getPath();
-            executeHandler(method, path, request, out);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void executeHandler(String method, String path, Request request, BufferedOutputStream out)
-            throws IOException {
-        if (handlers.containsKey(method)) {
-            if (handlers.get(method)
-                    .containsKey(path)) {
-                System.out.println(Colors.RESET + "Handler found for " + Colors.YELLOW_BOLD + path + Colors.RESET);
-                handlers.get(method)
-                        .get(path)
-                        .handle(request, out);
-            } else {
-                ResponceUtil.notFound(out);
-            }
-        } else {
-            ResponceUtil.badRequest(out);
-        }
-    }
-
     public void start() {
         System.out.println(Colors.CYAN + ">> Server started. Port: " + Colors.YELLOW_BOLD + PORT + Colors.CYAN + " <<" + Colors.RESET);
         final ExecutorService threadPool = Executors.newFixedThreadPool(64);
@@ -96,6 +63,40 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+    private void connect(Socket socket) {
+        System.out.println("New connection! Port: " + Colors.YELLOW_BOLD + socket.getPort() + Colors.RESET);
+        try (final var in = new BufferedInputStream(socket.getInputStream());
+             final var out = new BufferedOutputStream(socket.getOutputStream())) {
+
+            Request request = requestParser(in, out);
+
+            String method = request.getMethod();
+            String path = request.getPath();
+            executeHandler(method, path, request, out);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void executeHandler(String method, String path, Request request, BufferedOutputStream out)
+            throws IOException {
+        if (handlers.containsKey(method)) {
+            if (handlers.get(method)
+                    .containsKey(path)) {
+                System.out.println(Colors.RESET + "Handler found for " + Colors.YELLOW_BOLD + path + Colors.RESET);
+                handlers.get(method)
+                        .get(path)
+                        .handle(request, out);
+            } else {
+                ResponceUtil.notFound(out);
+            }
+        } else {
+            ResponceUtil.badRequest(out);
+        }
+    }
+
 
     private Request requestParser(BufferedInputStream in,
                                   BufferedOutputStream out) throws IOException {
