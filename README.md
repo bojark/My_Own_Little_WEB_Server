@@ -15,3 +15,23 @@
 **В работе:** 
 * Чтение файлов из запросов multipart/form-data.
 
+*****
+
+# My custom WEB-server
+I created this server while studying Java and Web interaction. 
+I started writing the server while doing homework on Java web-courses and extended trying to understand
+networking processes by myself.
+
+This is educational, not industrial product and not an attempt to imitate it.
+
+**The Server does:**
+
+* Processes GET and POST requests, parses their content.
+* Uses custom Handlers to handle various http-requests.
+* Processes the parameters passed through the http-request.
+* Processes data sent via forms in x-www-form-urlencoded format.
+
+**Working on:**
+
+* Reading files from multipart/form-data requests.
+
