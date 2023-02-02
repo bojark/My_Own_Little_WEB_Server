@@ -19,7 +19,7 @@ public class Main {
     private static void addHandlers(Server server) {
         server.addHandler("GET", "/post_form_multi.html", new BasicHandler());
         server.addHandler("GET", "/post_form_url.html", new BasicHandler());
-        server.addHandler("POST", "/?value=get-value", new FormHandler());
+        server.addHandler("POST", "/?value=get-value", new MPFormHandler());
         server.addHandler("POST", "/1?value=get-value", new UEFormHandler());
         for (String path : VALIDPATHS) {
             server.addHandler("GET", path, new BasicHandler());

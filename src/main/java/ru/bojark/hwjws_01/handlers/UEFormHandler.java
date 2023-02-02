@@ -17,7 +17,6 @@ public class UEFormHandler implements Handler {
             final var mimeType = Files.probeContentType(filePath);
             final var template = Files.readString(filePath);
 
-            //todo здесь сделать экстракцию параметров:
             final var content = template.replace(
                     "{title}",
                     request.getPostParams().get(0).getValue()

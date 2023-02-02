@@ -1,6 +1,6 @@
 package ru.bojark.hwjws_01;
 
-import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import ru.bojark.hwjws_01.misc.Colors;
@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.fileupload.FileUploadBase.MULTIPART;
+import static org.apache.commons.fileupload.FileUploadBase.MULTIPART_FORM_DATA;
 
 public class Request {
 
@@ -67,9 +70,13 @@ public class Request {
                 } else {
                     postParams = new ArrayList<>();
                 }
+                if (Objects.equals(contentType.get().getValue(), MULTIPART_FORM_DATA)){
+                    //todo поставить сюда метод для парсинга параметров из Мультипарта
+                }
             } else {
                 postParams = new ArrayList<>();
             }
+
         } else {
             postParams = new ArrayList<>();
         }
@@ -108,7 +115,6 @@ public class Request {
                 .collect(Collectors.toList());
     }
 
-
     private List<NameValuePair> extractQueryParams() throws URISyntaxException {
         return URLEncodedUtils.parse(URI.create(query), CHARSET_NAME);
     }
@@ -117,11 +123,9 @@ public class Request {
         return queryParams;
     }
 
-
     public List<NameValuePair> getQueryParam(String name) {
         return getParam(name, queryParams);
     }
-
 
     private List<NameValuePair> extractPostParams() {
         List<String> params = List.of(body.split("&"));
@@ -147,6 +151,18 @@ public class Request {
         return getParam(name, headers).get(0);
     }
 
+    private void extractParts(){
+        //todo метод для экстрактирования параметров из Мультипарта
+
+
+    }
+    public void getParts(){
+        //todo
+    }
+    public void getPart(String name){
+        //todo
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -156,13 +172,6 @@ public class Request {
         }
         sb.append(body);
         return sb.toString();
-    }
-
-    public void getParts(){
-        //todo
-    }
-    public void getPart(String name){
-        //todo
     }
 
     //класс-фабрика

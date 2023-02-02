@@ -6,7 +6,7 @@ import ru.bojark.hwjws_01.Request;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
-public class FormHandler implements Handler {
+public class MPFormHandler implements Handler {
     @Override
     public void handle(Request request, BufferedOutputStream out) {
         try {
