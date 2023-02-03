@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.fileupload.FileUploadBase.MULTIPART;
 import static org.apache.commons.fileupload.FileUploadBase.MULTIPART_FORM_DATA;
 
 public class Request {
@@ -30,26 +29,29 @@ public class Request {
     private final String protocol;
     private final List<NameValuePair> headers;
     private final String body;
-    private final List<NameValuePair> queryParams;
-    private final List<NameValuePair> postParams;
+    private List<NameValuePair> queryParams;
+    private List<NameValuePair> postParams;
 
     private Request(String method,
                     String path,
+                    String query,
                     String protocol,
                     List<NameValuePair> headers,
                     String body) {
 
         this.method = method;
-        this.query = path;
-        if (path.contains("\\?")) {
-            String[] queryLine = path.split(String.valueOf('?'), 2);
-            this.path = queryLine[0];
-        } else {
-            this.path = path;
-        }
+        this.path = path;
+        this.query = query;
         this.protocol = protocol;
         this.headers = headers;
         this.body = body;
+        init();
+
+
+        System.out.println(Colors.GREEN + ">> New Request <<\n" + Colors.WHITE + this + Colors.GREEN + "\n>> END <<" + Colors.RESET);
+    }
+
+    private void init(){
         List<NameValuePair> queryParams1;
         try {
             queryParams1 = extractQueryParams();
@@ -80,8 +82,6 @@ public class Request {
         } else {
             postParams = new ArrayList<>();
         }
-
-        System.out.println(Colors.GREEN + ">> New Request <<\n" + Colors.WHITE + this + Colors.GREEN + "\n>> END <<" + Colors.RESET);
     }
 
     public String getMethod() {
@@ -206,8 +206,13 @@ public class Request {
         }
 
         public Request build() {
-
-            return new Request(requestLine[0], requestLine[1], requestLine[2], parseHeaders(), body);
+            String path = requestLine[1];
+            String query = path;
+            if (path.contains("\\?")) {
+                String[] queryLine = path.split(String.valueOf('?'), 2);
+                path = queryLine[0];
+            }
+            return new Request(requestLine[0], path, query, requestLine[2], parseHeaders(), body);
         }
 
     }
