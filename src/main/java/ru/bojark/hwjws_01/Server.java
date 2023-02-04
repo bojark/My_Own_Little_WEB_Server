@@ -18,7 +18,6 @@ public class Server {
     private final int PORT;
     private int limit = 4096;
 
-
     private Map<String, Map<String, Handler>> handlers = new ConcurrentHashMap<>() {
     };
 
@@ -76,8 +75,9 @@ public class Server {
         }
     }
 
-    private void executeHandler(String method, String path, Request request, BufferedOutputStream out)
+    private void executeHandler(String method, String pathIn, Request request, BufferedOutputStream out)
             throws IOException {
+        String path = pathIn.split("\\?")[0];
         if (handlers.containsKey(method)) {
             if (handlers.get(method)
                     .containsKey(path)) {

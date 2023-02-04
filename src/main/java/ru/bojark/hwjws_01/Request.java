@@ -25,7 +25,6 @@ public class Request {
 
     private final String method;
     private final String path;
-    private final String query;
     private final String protocol;
     private final List<NameValuePair> headers;
     private final String body;
@@ -34,14 +33,12 @@ public class Request {
 
     private Request(String method,
                     String path,
-                    String query,
                     String protocol,
                     List<NameValuePair> headers,
                     String body) {
 
         this.method = method;
         this.path = path;
-        this.query = query;
         this.protocol = protocol;
         this.headers = headers;
         this.body = body;
@@ -116,7 +113,7 @@ public class Request {
     }
 
     private List<NameValuePair> extractQueryParams() throws URISyntaxException {
-        return URLEncodedUtils.parse(URI.create(query), CHARSET_NAME);
+        return URLEncodedUtils.parse(URI.create(path), CHARSET_NAME);
     }
 
     public List<NameValuePair> getQueryParams() {
@@ -151,6 +148,8 @@ public class Request {
         return getParam(name, headers).get(0);
     }
 
+
+    //todo multipart
     private void extractParts(){
         //todo метод для экстрактирования параметров из Мультипарта
 
@@ -207,12 +206,7 @@ public class Request {
 
         public Request build() {
             String path = requestLine[1];
-            String query = path;
-            if (path.contains("\\?")) {
-                String[] queryLine = path.split(String.valueOf('?'), 2);
-                path = queryLine[0];
-            }
-            return new Request(requestLine[0], path, query, requestLine[2], parseHeaders(), body);
+            return new Request(requestLine[0], path, requestLine[2], parseHeaders(), body);
         }
 
     }

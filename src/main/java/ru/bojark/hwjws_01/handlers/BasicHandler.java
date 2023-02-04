@@ -13,6 +13,10 @@ public class BasicHandler implements Handler {
     @Override
     public void handle(Request request, BufferedOutputStream responseStream) {
         final var filePath = Path.of(".", "public", request.getPath());
+        respondOK(responseStream, filePath);
+    }
+
+    static void respondOK(BufferedOutputStream responseStream, Path filePath) {
         System.out.println("Handler tries to find something on " + Colors.YELLOW_BOLD + filePath + Colors.RESET);
         try {
             final var mimeType = Files.probeContentType(filePath);
@@ -29,7 +33,5 @@ public class BasicHandler implements Handler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 }
