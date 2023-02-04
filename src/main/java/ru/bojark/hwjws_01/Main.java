@@ -5,8 +5,8 @@ import ru.bojark.hwjws_01.handlers.*;
 import java.util.List;
 
 public class Main {
-    private static final List<String> VALIDPATHS = List.of("/index.html", "/spring.svg", "/seagull.png",
-            "/resources.html", "/styles.css", "/app.js", "/links.html", "/events.html", "/events.js");
+    private static final List<String> VALIDPATHS = List.of("/spring.svg", "/seagull.png",
+            "/resources.html", "/styles.css", "/app.js", "/links.html", "/clicker.html", "/clicker.js");
 
     public static void main(String[] args) {
         Server server = new Server(9999);
